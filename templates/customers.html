@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Customers</h1>
+
+{% if message %}
+<div style="padding: 10px; background: #e6ffed; border: 1px solid #2ecc71; margin-bottom: 15px;">
+    {{ message }}
+</div>
+{% endif %}
+
+{% for customer in customers %}
+<div class="card">
+    <strong>{{ customer.name }}</strong><br>
+    {{ customer.phone or "" }}<br>
+    {% if customer.is_account %}
+        <em>Account customer</em>
+    {% endif %}
+    <br><br>
+    <a href="/ui/customers/{{ customer.id }}/invoice">Create Invoice</a>
+</div>
+{% endfor %}
+{% endblock %}

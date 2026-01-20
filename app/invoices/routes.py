@@ -106,3 +106,24 @@ def upload_invoice_attachment(
         "file_path": attachment.file_path,
     }
 
+@router.patch("/{invoice_id}/pay")
+def mark_invoice_paid(
+    invoice_id: int,
+    db: Session = Depends(get_db),
+):
+    invoice = db.query(Invoice).filter(Invoice.id == invoice_id).first()
+    if not invoice:
+        raise HTTPException(status_code=404, detail="Invoice not found")
+
+    if invoice.is_paid:
+        return {"message": "Invoice already marked as paid"}
+
+    invoice.is_paid = True
+    db.commit()
+
+    return {
+        "message": "Invoice marked as paid",
+        "invoice_id": invoice.id,
+    }
+
+

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Create Invoice</h1>
+
+<form method="post">
+    <input type="hidden" name="customer_id" value="{{ customer.id }}">
+
+    <p>
+        <strong>Customer:</strong><br>
+        {{ customer.name }}
+    </p>
+
+    <p>
+        Description<br>
+        <input type="text" name="description" required>
+    </p>
+
+    <p>
+        Total Amount (€)<br>
+        <input type="number" name="total_amount" step="0.01" required>
+    </p>
+
+    <p>
+        <label>
+            <input type="checkbox" name="is_account" {% if customer.is_account %}checked{% endif %}>
+            Account invoice
+        </label>
+    </p>
+
+    <button type="submit">Create Invoice</button>
+</form>
+
+{% endblock %}

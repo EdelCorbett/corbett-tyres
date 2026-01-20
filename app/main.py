@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from app.ui.routes import router as ui_router
 
 from app.core.database import Base, engine
 from app.customers.models import Customer  # noqa: F401
@@ -7,6 +8,7 @@ from app.invoices.models import Invoice, InvoiceAttachment  # noqa: F401
 from app.invoices.routes import router as invoice_router
 
 app = FastAPI(title="Corbett Tyres Management System")
+app.include_router(ui_router)
 
 
 @app.on_event("startup")

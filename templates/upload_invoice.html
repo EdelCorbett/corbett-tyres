@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Upload Invoice Photo</h1>
+
+<p>
+    <strong>Invoice ID:</strong> {{ invoice.id }}<br>
+    <strong>Customer:</strong> {{ customer.name }}
+</p>
+
+<form method="post" enctype="multipart/form-data">
+    <p>
+        <input type="file" name="file" accept="image/*,application/pdf" required>
+    </p>
+
+    <button type="submit">Upload Photo</button>
+</form>
+
+{% endblock %}
