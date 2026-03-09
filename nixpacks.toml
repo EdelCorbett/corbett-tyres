@@ -5,5 +5,8 @@ nixPkgs = [
   "cairo",
   "gdk-pixbuf",
   "libffi",
-  "fontconfig"
+  "fontconfig",
+  "libxml2",
+  "libxslt",
+  "gtk3"
 ]
