@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.responses import RedirectResponse
 from starlette.middleware.sessions import SessionMiddleware
 from app.ui.routes import router as ui_router
 
@@ -26,5 +27,9 @@ app.include_router(invoice_router)
 
 
 @app.get("/")
+def root():
+    return RedirectResponse("/ui")
+
+@app.get("/health")
 def health_check():
     return {"status": "ok"}
