@@ -4,7 +4,7 @@ from fastapi.responses import RedirectResponse, Response
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
-from weasyprint import HTML
+
 from datetime import date
 from decimal import Decimal
 import os
@@ -510,6 +510,8 @@ def customer_statement_pdf(
     request: Request,
     db: Session = Depends(get_db),
 ):
+    from weasyprint import HTML
+    
     customer = db.query(Customer).filter(Customer.id == customer_id).first()
 
     if not customer:
