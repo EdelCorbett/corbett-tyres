@@ -3,7 +3,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse, Response
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from urllib3 import request
+
 from weasyprint import HTML
 from datetime import date
 from decimal import Decimal
