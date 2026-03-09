@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Invoices for {{ customer.name }}</h1>
+
+<a href="/ui/customers">← Back to customers</a>
+
+<hr>
+
+{% if invoices %}
+  <ul>
+{% for invoice in invoices %}
+  <li>
+    {{ invoice.invoice_date }}
+    —
+    €{{ "%.2f"|format(invoice.total_amount) }}
+
+    {% if invoice.payment_status == "PAID" %}
+      ✅ Paid
+    {% elif invoice.payment_status == "PARTIAL" %}
+      🟡 Partial (€{{ "%.2f"|format(invoice.balance_due) }} due)
+    {% else %}
+      ❌ Unpaid
+    {% endif %}
+
+    | <a href="/ui/invoices/{{ invoice.id }}">View</a>
+  </li>
+{% endfor %}
+</ul>
+
+{% else %}
+  <p>No invoices for this customer.</p>
+{% endif %}
+{% endblock %}

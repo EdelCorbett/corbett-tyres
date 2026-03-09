@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Allocate Payment</h1>
+
+<p>
+  <strong>Customer:</strong> {{ customer.name }}
+</p>
+
+<form method="post">
+  <p>
+    Total payment received (€)<br>
+    <input type="number" name="total_amount" step="0.01" required>
+  </p>
+
+  <p>
+    Note<br>
+    <input type="text" name="note" placeholder="Jan statement payment">
+  </p>
+
+  <h3>Allocate to invoices</h3>
+
+  <table border="1" cellpadding="6" cellspacing="0">
+    <tr>
+      <th>Invoice</th>
+      <th>Date</th>
+      <th>Balance Due (€)</th>
+      <th>Allocate (€)</th>
+    </tr>
+    {% for inv in invoices %}
+    <tr>
+      <td>#{{ inv.id }}</td>
+      <td>{{ inv.invoice_date }}</td>
+      <td>{{ "%.2f"|format(inv.balance_due) }}</td>
+      <td>
+        <input
+          type="number"
+          name="alloc_{{ inv.id }}"
+          step="0.01"
+          max="{{ inv.balance_due }}"
+        >
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <br>
+  <button type="submit">Apply Payment</button>
+</form>
+
+<p>
+  <a href="/ui/customers/{{ customer.id }}/invoices">← Back</a>
+</p>
+{% endblock %}

@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Invoice #{{ invoice.id }}</h1>
+
+{% if invoice.docket_number %}
+<p style="font-size:1.2em;">
+  <strong>Docket:</strong> {{ invoice.docket_number }}
+</p>
+{% endif %}
+
+<p>
+  <strong>Date:</strong> {{ invoice.invoice_date }}<br>
+  <strong>Description:</strong> {{ invoice.description }}<br>
+
+  <strong>Total:</strong> €{{ "%.2f"|format(invoice.total_amount) }}<br>
+  <strong>Paid:</strong> €{{ "%.2f"|format(invoice.total_paid) }}<br>
+  <strong>Balance Due:</strong> €{{ "%.2f"|format(invoice.balance_due) }}<br>
+
+  <strong>Status:</strong>
+  {% if error %}
+  <div style="background:#ffe0e0; color:#900; padding:10px; margin-bottom:15px; border:1px solid #c00;">
+  ⚠️ {{ error }}
+  </div>
+  {% endif %}
+
+  {% if invoice.payment_status == "PAID" %}
+    ✅ Paid
+  {% elif invoice.payment_status == "PARTIAL" %}
+    🟡 Partially Paid
+  {% else %}
+    ❌ Unpaid
+  {% endif %}
+</p>
+
+<hr>
+
+{% if invoice.balance_due > 0 %}
+<h2>Add Payment</h2>
+
+<form method="post" action="/ui/invoices/{{ invoice.id }}/payment">
+  <p>
+    Payment amount (€)<br>
+    <input
+      type="number"
+      name="amount"
+      step="0.01"
+      max="{{ invoice.balance_due }}"
+      required
+    >
+  </p>
+
+  <p>
+    Note (optional)<br>
+    <input
+      type="text"
+      name="note"
+      placeholder="Cash / Card / Bank transfer"
+    >
+  </p>
+
+  <button type="submit">Record Payment</button>
+</form>
+{% else %}
+<p><strong>This invoice is fully paid.</strong></p>
+{% endif %}
+
+{% if invoice.payments %}
+<hr>
+<h3>Payment History</h3>
+
+<table border="1" cellpadding="6" cellspacing="0">
+  <tr>
+    <th>Date</th>
+    <th>Amount (€)</th>
+    <th>Note</th>
+  </tr>
+  {% for p in invoice.payments %}
+  <tr>
+    <td>{{ p.payment_date }}</td>
+    <td>{{ "%.2f"|format(p.amount) }}</td>
+    <td>{{ p.note or "" }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endif %}
+
+<hr>
+
+<h2>Invoice Photos</h2>
+
+{% if attachments %}
+  {% for a in attachments %}
+    <img
+      src="/{{ a.file_path }}"
+      style="max-width:100%; margin-bottom:20px;"
+    >
+  {% endfor %}
+{% else %}
+  <p>No invoice photo uploaded.</p>
+{% endif %}
+
+<p>
+  <a href="/ui/invoices/{{ invoice.id }}/upload">
+    Upload / replace photo
+  </a>
+</p>
+
+<p>
+  <a href="/ui/customers/{{ invoice.customer_id }}/invoices">
+    ← Back to invoices
+  </a>
+</p>
+{% endblock %}

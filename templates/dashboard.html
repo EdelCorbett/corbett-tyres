@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Dashboard</h1>
+
+<div class="card">
+    <strong>Total Outstanding</strong><br>
+    €{{ "%.2f"|format(total_outstanding) }}
+</div>
+
+<div class="card">
+    <strong>Invoices This Month</strong><br>
+    €{{ "%.2f"|format(invoices_total) }}
+</div>
+
+<div class="card">
+    <strong>Payments This Month</strong><br>
+    €{{ "%.2f"|format(payments_total) }}
+</div>
+
+<h3>Customers</h3>
+
+{% for c in customers_owing %}
+<div class="card">
+    <strong>{{ c.name }}</strong><br>
+    <a href="/ui/customers/{{ c.id }}/invoices">
+        View invoices
+    </a>
+</div>
+{% endfor %}
+
+{% endblock %}

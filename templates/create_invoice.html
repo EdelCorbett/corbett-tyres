@@ -12,6 +12,11 @@
     </p>
 
     <p>
+        Docket number<br>
+        <input type="text" name="docket_number" placeholder="DB 013132">
+    </p>
+
+    <p>
         Description<br>
         <input type="text" name="description" required>
     </p>
@@ -23,7 +28,8 @@
 
     <p>
         <label>
-            <input type="checkbox" name="is_account" {% if customer.is_account %}checked{% endif %}>
+            <input type="checkbox" name="is_account"
+                   {% if customer.is_account %}checked{% endif %}>
             Account invoice
         </label>
     </p>

@@ -1,23 +1,50 @@
 {% extends "base.html" %}
 
 {% block content %}
+
 <h1>Customers</h1>
 
-{% if message %}
-<div style="padding: 10px; background: #e6ffed; border: 1px solid #2ecc71; margin-bottom: 15px;">
-    {{ message }}
-</div>
-{% endif %}
+<p>
+<a href="/ui/customers/new">
+<button>Create Customer</button>
+</a>
+</p>
 
 {% for customer in customers %}
 <div class="card">
+
     <strong>{{ customer.name }}</strong><br>
+
     {{ customer.phone or "" }}<br>
+
     {% if customer.is_account %}
         <em>Account customer</em>
     {% endif %}
+
     <br><br>
-    <a href="/ui/customers/{{ customer.id }}/invoice">Create Invoice</a>
+
+    <a href="/ui/customers/{{ customer.id }}/invoice">
+        Create Invoice
+    </a>
+    <br>
+
+    <a href="/ui/customers/{{ customer.id }}/invoices">
+        View invoices
+    </a>
+    <br>
+
+    <a href="/ui/customers/{{ customer.id }}/statement?year=2026&month=1">
+        View Statement
+    </a>
+
+    {% if customer.balance and customer.balance > 0 %}
+    <br>
+    <strong style="color:#c0392b">
+        Balance: €{{ "%.2f"|format(customer.balance) }}
+    </strong>
+    {% endif %}
+
 </div>
 {% endfor %}
+
 {% endblock %}

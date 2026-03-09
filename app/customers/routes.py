@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from datetime import date
+from decimal import Decimal
 import calendar
 
 from app.core.database import SessionLocal
@@ -19,6 +20,9 @@ def get_db():
         db.close()
 
 
+# --------------------
+# Customers
+# --------------------
 @router.post("/")
 def create_customer(
     customer: CustomerCreate,
@@ -33,7 +37,7 @@ def create_customer(
 
 @router.get("/")
 def list_customers(db: Session = Depends(get_db)):
-    return db.query(Customer).all()
+    return db.query(Customer).order_by(Customer.name).all()
 
 
 @router.get("/search")
@@ -51,6 +55,9 @@ def search_customers(
     )
 
 
+# --------------------
+# Customer Statement (WITH PREVIOUS BALANCE)
+# --------------------
 @router.get("/{customer_id}/statement")
 def customer_statement(
     customer_id: int,
@@ -61,16 +68,40 @@ def customer_statement(
     if month < 1 or month > 12:
         raise HTTPException(status_code=400, detail="Month must be between 1 and 12")
 
-    start_date = date(year, month, 1)
-    last_day = calendar.monthrange(year, month)[1]
-    end_date = date(year, month, last_day)
+    customer = db.query(Customer).filter(Customer.id == customer_id).first()
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
 
-    invoices = (
+    start_date = date(year, month, 1)
+    end_date = date(year, month, calendar.monthrange(year, month)[1])
+
+    # -----------------------------
+    # 1️⃣ Previous balance (before month)
+    # -----------------------------
+    previous_invoices = (
         db.query(Invoice)
         .filter(
             Invoice.customer_id == customer_id,
             Invoice.is_account == True,
-            Invoice.is_paid == False,
+            Invoice.invoice_date < start_date,
+        )
+        .all()
+    )
+
+    opening_balance = Decimal("0.00")
+
+    for inv in previous_invoices:
+        paid = sum((p.amount for p in inv.payments), Decimal("0.00"))
+        opening_balance += inv.total_amount - paid
+
+    # -----------------------------
+    # 2️⃣ This month’s invoices
+    # -----------------------------
+    month_invoices = (
+        db.query(Invoice)
+        .filter(
+            Invoice.customer_id == customer_id,
+            Invoice.is_account == True,
             Invoice.invoice_date >= start_date,
             Invoice.invoice_date <= end_date,
         )
@@ -78,12 +109,35 @@ def customer_statement(
         .all()
     )
 
-    total = sum(inv.total_amount for inv in invoices)
+    invoice_rows = []
+    month_balance = Decimal("0.00")
+
+    for inv in month_invoices:
+        paid = sum((p.amount for p in inv.payments), Decimal("0.00"))
+        balance = inv.total_amount - paid
+
+        invoice_rows.append({
+            "invoice_id": inv.id,
+            "invoice_date": inv.invoice_date,
+            "docket_number": inv.docket_number,
+            "total": inv.total_amount,
+            "paid": paid,
+            "balance": balance,
+        })
+
+        month_balance += balance
+
+    # -----------------------------
+    # 3️⃣ Final totals
+    # -----------------------------
+    total_due = opening_balance + month_balance
 
     return {
         "customer_id": customer_id,
+        "customer_name": customer.name,
         "period": f"{year}-{month:02d}",
-        "invoice_count": len(invoices),
-        "total_due": total,
-        "invoices": invoices,
+        "opening_balance": opening_balance.quantize(Decimal("0.01")),
+        "month_balance": month_balance.quantize(Decimal("0.01")),
+        "total_due": total_due.quantize(Decimal("0.01")),
+        "invoices": invoice_rows,
     }

@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Statement</h1>
+
+<div style="margin: 10px 0;">
+  <a href="/ui/customers/{{ customer.id }}/statement?year={{ prev_year }}&month={{ prev_month }}">
+    ← Previous month
+  </a>
+  |
+  <a href="/ui/customers/{{ customer.id }}/statement?year={{ next_year }}&month={{ next_month }}">
+    Next month →
+  </a>
+</div>
+
+<p>
+  <strong>Customer:</strong> {{ customer.name }}
+</p>
+
+<form method="post" style="margin-bottom:15px;">
+  {% if locked %}
+    <input type="hidden" name="year" value="{{ year }}">
+    <input type="hidden" name="month" value="{{ month }}">
+    <button
+      formaction="/ui/customers/{{ customer.id }}/statement/unlock"
+      style="background:#c0392b;color:white;padding:6px 12px;border:none;cursor:pointer;"
+    >
+      🔓 Unlock statement
+    </button>
+  {% else %}
+    <input type="hidden" name="year" value="{{ year }}">
+    <input type="hidden" name="month" value="{{ month }}">
+    <button
+      formaction="/ui/customers/{{ customer.id }}/statement/lock"
+      style="background:#555;color:white;padding:6px 12px;border:none;cursor:pointer;"
+    >
+      🔒 Lock statement
+    </button>
+  {% endif %}
+</form>
+
+<form method="get" action="/ui/customers/{{ customer.id }}/statement" style="margin-bottom:20px;">
+  <label>
+    Month:
+    <select name="month">
+      {% for m in range(1, 13) %}
+        <option value="{{ m }}" {% if m == month %}selected{% endif %}>
+          {{ m }}
+        </option>
+      {% endfor %}
+    </select>
+  </label>
+
+  <label style="margin-left:10px;">
+    Year:
+    <select name="year">
+      {% for y in range(2024, 2031) %}
+        <option value="{{ y }}" {% if y == year %}selected{% endif %}>
+          {{ y }}
+        </option>
+      {% endfor %}
+    </select>
+  </label>
+
+  <button type="submit" style="margin-left:10px;">
+    View statement
+  </button>
+</form>
+
+<hr>
+
+<p><strong>Opening balance:</strong> €{{ "%.2f"|format(opening_balance) }}</p>
+<p><strong>Payments this month:</strong> €{{ "%.2f"|format(payments_total) }}</p>
+
+<hr>
+
+<p>
+  <a
+    href="/ui/customers/{{ customer.id }}/statement/pdf?year={{ year }}&month={{ month }}"
+    target="_blank"
+  >
+    📄 Download PDF
+  </a>
+</p>
+
+<h3>Invoices this month</h3>
+
+<table border="1" cellpadding="8" cellspacing="0" width="100%">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Invoice #</th>
+      <th>Docket</th>
+      <th>Description</th>
+      <th>Amount (€)</th>
+      <th>Balance (€)</th>
+    </tr>
+  </thead>
+
+{% set balance = opening_balance %}
+
+<tbody>
+
+<tr>
+  <td colspan="4"><strong>Opening balance</strong></td>
+  <td><strong>€{{ "%.2f"|format(balance) }}</strong></td>
+</tr>
+
+{% for inv in invoices %}
+{% set balance = balance + inv.total_amount %}
+
+<tr>
+  <td>{{ inv.invoice_date }}</td>
+
+  <td>
+    <a href="/ui/invoices/{{ inv.id }}">
+      {{ inv.id }}
+    </a>
+  </td>
+
+  <td>
+    {{ inv.docket_number or "" }}
+  </td>
+
+  <td>{{ inv.description }}</td>
+
+  <td>€{{ "%.2f"|format(inv.total_amount) }}</td>
+
+  <td>
+    €{{ "%.2f"|format(balance) }}
+  </td>
+</tr>
+
+{% endfor %}
+
+</tbody>
+</table>
+
+<hr>
+
+<h2>Closing balance: €{{ "%.2f"|format(closing_balance) }}</h2>
+
+<p>
+  <a href="/ui/customers/{{ customer.id }}/invoices">← Back to invoices</a>
+</p>
+
+{% endblock %}

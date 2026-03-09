@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Search results</h1>
+
+<p>Search: <strong>{{ query }}</strong></p>
+
+<h3>Customers</h3>
+
+{% for c in customers %}
+<div class="card">
+<strong>{{ c.name }}</strong><br>
+{{ c.phone or "" }}
+
+<br><br>
+
+<a href="/ui/customers/{{ c.id }}/invoices">
+View invoices
+</a>
+
+</div>
+{% endfor %}
+
+<h3>Invoices</h3>
+
+{% for inv in invoices %}
+<div class="card">
+
+Invoice #{{ inv.id }}<br>
+
+{% if inv.docket_number %}
+Docket: {{ inv.docket_number }}<br>
+{% endif %}
+
+{{ inv.description }}
+
+<br><br>
+
+<a href="/ui/invoices/{{ inv.id }}">
+Open invoice
+</a>
+
+</div>
+{% endfor %}
+
+{% endblock %}

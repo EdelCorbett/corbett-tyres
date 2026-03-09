@@ -1,18 +1,77 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Corbett Tyres</title>
+    <title>{% block title %}Corbett Tyres{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
         h1 { margin-bottom: 10px; }
+
         .card { padding: 12px; border: 1px solid #ddd; margin-bottom: 10px; }
+
         a { text-decoration: none; color: #0066cc; }
+
         button { padding: 10px; font-size: 16px; }
         input { padding: 8px; font-size: 16px; width: 100%; }
+
+        .nav {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .nav a {
+            margin-right: 15px;
+            font-weight: bold;
+        }
+
+        .error {
+            background: #ffe0e0;
+            border: 1px solid #ff8080;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+
+        .success {
+            background: #e0ffe8;
+            border: 1px solid #6edb8b;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
+
+    <div class="nav">
+        <strong>Corbett Tyres</strong>
+        <a href="/ui/">Dashboard</a>
+        <a href="/ui/customers">Customers</a>
+    </div>
+    <form action="/ui/search" method="get" style="margin-bottom:20px;">
+    
+    <input
+    type="text"
+    name="q"
+    placeholder="Search name, phone, docket, invoice #"
+    required
+    >
+    <button type="submit">Search</button>
+
+    </form>
+    <a href="/logout">Logout</a>
+    {% if error %}
+        <div class="error">
+            {{ error }}
+        </div>
+    {% endif %}
+
+    {% if message %}
+        <div class="success">
+            {{ message }}
+        </div>
+    {% endif %}
+
     {% block content %}{% endblock %}
+
 </body>
 </html>

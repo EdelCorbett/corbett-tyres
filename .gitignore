@@ -8,4 +8,14 @@ __pycache__/
 # Local databases & secrets
 *.db
 .env
+
+# User uploads
 uploads/
+
+# Alembic cache
+alembic/__pycache__/
+
+# Generated files
+*.pdf
+
+
