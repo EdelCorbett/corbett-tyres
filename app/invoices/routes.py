@@ -1,6 +1,7 @@
 import os
+from sqlalchemy import func
+from datetime import date, datetime 
 from uuid import uuid4
-from datetime import date
 
 from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
 from sqlalchemy.orm import Session
@@ -33,7 +34,21 @@ def create_invoice(
     invoice: InvoiceCreate,
     db: Session = Depends(get_db),
 ):
+    # Current year
+    year = datetime.now().year
+
+    # Count invoices created this year
+    count = db.query(func.count(Invoice.id)).filter(
+        func.extract("year", Invoice.invoice_date) == year
+    ).scalar()
+
+    next_number = count + 1
+
+    # Generate invoice number
+    invoice_number = f"INV-{year}-{next_number:04d}"
+
     new_invoice = Invoice(
+        invoice_number=invoice_number,
         customer_id=invoice.customer_id,
         invoice_date=invoice.invoice_date or date.today(),
         description=invoice.description,

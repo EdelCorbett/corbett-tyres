@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Invoice #{{ invoice.id }}</h1>
+<h1>Invoice #{{  invoice.invoice_number }}</h1>
 
 {% if invoice.docket_number %}
 <p style="font-size:1.2em;">

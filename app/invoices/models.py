@@ -18,6 +18,8 @@ class Invoice(Base):
     __tablename__ = "invoices"
 
     id = Column(Integer, primary_key=True, index=True)
+    invoice_number = Column(String, unique=True, index=True)
+    
     customer_id = Column(Integer, ForeignKey("customers.id"), nullable=False)
 
     docket_number = Column(String, nullable=True, index=True)
