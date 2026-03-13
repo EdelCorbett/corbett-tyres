@@ -25,7 +25,6 @@ def get_db():
     finally:
         db.close()
 
-
 # -------------------------
 # Create invoice
 # -------------------------
@@ -35,7 +34,7 @@ def create_invoice(
     db: Session = Depends(get_db),
 ):
     # Current year
-    year = datetime.now().year
+    year = (invoice.invoice_date or date.today()).year
 
     # Count invoices created this year
     count = db.query(func.count(Invoice.id)).filter(

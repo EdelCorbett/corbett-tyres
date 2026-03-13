@@ -16,7 +16,6 @@ from app.invoices.models import Invoice, InvoiceAttachment, InvoicePayment
 from app.statements.models import StatementLock
 from app.statements.service import get_customer_statement, is_statement_locked
 
-
 router = APIRouter(prefix="/ui", tags=["ui"])
 templates = Jinja2Templates(directory="templates")
 
@@ -36,45 +35,8 @@ def get_db():
 def require_login(request: Request):
     if not request.session.get("user"):
         raise RedirectResponse("/login")
-    
-# --------------------
-# Global Search
-# --------------------
-@router.get("/search")
-def search(
-    request: Request,
-    q: str,
-    db: Session = Depends(get_db),
-):
+    return None
 
-    customers = db.query(Customer).filter(
-        Customer.name.ilike(f"%{q}%")
-    ).all()
-
-    phone_matches = db.query(Customer).filter(
-        Customer.phone.ilike(f"%{q}%")
-    ).all()
-
-    invoices = db.query(Invoice).filter(
-        Invoice.docket_number.ilike(f"%{q}%")
-    ).all()
-
-    invoice_id_match = []
-
-    if q.isdigit():
-        invoice = db.query(Invoice).filter(Invoice.id == int(q)).first()
-        if invoice:
-            invoice_id_match.append(invoice)
-
-    return templates.TemplateResponse(
-        "search_results.html",
-        {
-            "request": request,
-            "query": q,
-            "customers": customers + phone_matches,
-            "invoices": invoices + invoice_id_match,
-        },
-    )
 
 # --------------------
 # Dashboard
@@ -82,8 +44,11 @@ def search(
 @router.get("/")
 def dashboard(request: Request, db: Session = Depends(get_db)):
 
-    today = date.today()
+    redirect = require_login(request)
+    if redirect:
+        return redirect
 
+    today = date.today()
     month_start = date(today.year, today.month, 1)
 
     invoices_total = (
@@ -133,6 +98,70 @@ def dashboard(request: Request, db: Session = Depends(get_db)):
             "customers_owing": customers_owing,
         },
     )
+
+
+# --------------------
+# Global Search
+# --------------------
+
+@router.get("/search")
+def search(request: Request, q: str | None = None, db: Session = Depends(get_db)):
+
+    redirect = require_login(request)
+    if redirect:
+        return redirect
+
+    if not q:
+        return templates.TemplateResponse(
+            "search_results.html",
+            {
+                "request": request,
+                "query": "",
+                "customers": [],
+                "invoices": [],
+            },
+        )
+
+    customers = db.query(Customer).filter(
+        Customer.name.ilike(f"%{q}%")
+    ).all()
+
+    phone_matches = db.query(Customer).filter(
+        Customer.phone.ilike(f"%{q}%")
+    ).all()
+
+    invoices = db.query(Invoice).filter(
+        Invoice.docket_number.ilike(f"%{q}%")
+    ).all()
+
+    invoice_number_matches = db.query(Invoice).filter(
+        Invoice.invoice_number.ilike(f"%{q}%")
+    ).all()
+
+    invoice_id_match = []
+
+    if q.isdigit():
+        invoice = db.query(Invoice).filter(Invoice.id == int(q)).first()
+        if invoice:
+            invoice_id_match.append(invoice)
+
+    customer_map = {c.id: c for c in customers + phone_matches}
+    customers = list(customer_map.values())
+
+    invoice_map = {
+        i.id: i for i in invoices + invoice_id_match + invoice_number_matches
+    }
+    invoices = list(invoice_map.values())
+
+    return templates.TemplateResponse(
+        "search_results.html",
+        {
+            "request": request,
+            "query": q,
+            "customers": customers,
+            "invoices": invoices,
+        },
+    )
 # --------------------
 # Customers
 # --------------------
@@ -142,9 +171,12 @@ def customer_list(
     message: str | None = None,
     error: str | None = None,
     db: Session = Depends(get_db),
-):  
-    if not request.session.get("user"):
-        return RedirectResponse("/login")
+):
+
+    redirect = require_login(request)
+    if redirect:
+        return redirect
+
     customers = db.query(Customer).order_by(Customer.name).all()
 
     for c in customers:
@@ -165,7 +197,7 @@ def customer_list(
             .scalar()
         )
 
-        balance = Decimal(invoices_total) - Decimal(payments_total)
+        balance = Decimal(invoices_total or 0) - Decimal(payments_total or 0)
 
         if balance < 0:
             balance = Decimal("0.00")
@@ -189,7 +221,7 @@ def customer_list(
 def create_customer_form(request: Request):
     return templates.TemplateResponse(
         "create_customer.html",
-        {"request": request},
+        {"request": request}
     )
 
 
@@ -511,7 +543,7 @@ def customer_statement_pdf(
     db: Session = Depends(get_db),
 ):
     from weasyprint import HTML
-    
+
     customer = db.query(Customer).filter(Customer.id == customer_id).first()
 
     if not customer:

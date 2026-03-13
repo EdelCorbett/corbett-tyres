@@ -8,12 +8,15 @@
     <strong>Customer:</strong> {{ customer.name }}
 </p>
 
-<form method="post" enctype="multipart/form-data">
+<form method="post" enctype="multipart/form-data"
+      action="/ui/invoices/{{ invoice.id }}/upload">
+
     <p>
         <input type="file" name="file" accept="image/*,application/pdf" required>
     </p>
 
     <button type="submit">Upload Photo</button>
+
 </form>
 
 {% endblock %}

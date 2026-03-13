@@ -27,9 +27,11 @@
     </p>
 
     <p>
+        <input type="hidden" name="is_account" value="false">
+
         <label>
-            <input type="checkbox" name="is_account"
-                   {% if customer.is_account %}checked{% endif %}>
+            <input type="checkbox" name="is_account" value="true"
+            {% if customer.is_account %}checked{% endif %}>
             Account invoice
         </label>
     </p>

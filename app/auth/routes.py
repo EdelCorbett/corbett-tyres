@@ -23,7 +23,7 @@ def login_submit(request: Request, username: str = Form(...), password: str = Fo
 
     if username == USERNAME and password == PASSWORD:
         request.session["user"] = username
-        return RedirectResponse("/ui/", status_code=303)
+        return RedirectResponse("/ui/dashboard", status_code=303)
 
     return templates.TemplateResponse(
         "login.html",
