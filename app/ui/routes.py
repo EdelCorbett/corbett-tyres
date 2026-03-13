@@ -34,14 +34,14 @@ def get_db():
 
 def require_login(request: Request):
     if not request.session.get("user"):
-        raise RedirectResponse("/login")
+        return RedirectResponse("/login")
     return None
 
 
 # --------------------
 # Dashboard
 # --------------------
-@router.get("/")
+@router.get("/dashboard")
 def dashboard(request: Request, db: Session = Depends(get_db)):
 
     redirect = require_login(request)
@@ -221,10 +221,8 @@ def customer_list(
 def create_customer_form(request: Request):
     return templates.TemplateResponse(
         "create_customer.html",
-        {"request": request}
+        {"request": request},
     )
-
-
 @router.post("/customers/new")
 def create_customer_submit(
     request: Request,
@@ -233,7 +231,6 @@ def create_customer_submit(
     is_account: bool = Form(False),
     db: Session = Depends(get_db),
 ):
-
     customer = Customer(
         name=name,
         phone=phone,
@@ -247,6 +244,7 @@ def create_customer_submit(
         url="/ui/customers?message=Customer created",
         status_code=303,
     )
+
 
 # --------------------
 # Customer Invoices
